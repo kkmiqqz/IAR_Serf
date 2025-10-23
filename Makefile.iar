@@ -1,0 +1,119 @@
+# IAR EW8051 项目配置文件
+# 用于CC2530轨迹压缩项目
+
+# 项目设置
+PROJECT_NAME = TrajectoryCompression_CC2530
+TARGET_DEVICE = CC2530
+COMPILER = IAR_EW8051
+
+# 源文件路径
+SRC_DIR = src
+TEST_DIR = test
+UTILS_DIR = src/utils
+COMPRESSOR_DIR = src/compressor
+DECOMPRESSOR_DIR = src/decompressor
+BASELINE_DIR = test/baselines
+
+# 主要源文件
+MAIN_SOURCES = \
+    test/unit_test/iar_comprehensive_test.c \
+    src/utils/file_reader.c \
+    src/utils/output_bit_stream.cc \
+    src/utils/input_bit_stream.cc \
+    src/utils/elias_gamma_codec.cc \
+    src/compressor/serf_qt_compressor.cc \
+    src/decompressor/serf_qt_decompressor.cc \
+    test/baselines/chimp128/chimp_compressor.cc
+
+# 头文件路径
+INCLUDE_PATHS = \
+    src \
+    src/utils \
+    src/compressor \
+    src/decompressor \
+    test/baselines/chimp128
+
+# 编译器标志
+CFLAGS = \
+    -DDEBUG_MODE \
+    -DMAX_ARRAY_SIZE=2048 \
+    -DMAX_TRAJECTORY_POINTS=1000 \
+    -O2 \
+    --code_model=small \
+    --data_model=small \
+    --core=8051
+
+# 链接器标志
+LDFLAGS = \
+    --code_model=small \
+    --data_model=small \
+    --core=8051
+
+# 内存配置
+MEMORY_CONFIG = \
+    --code_model=small \
+    --data_model=small \
+    --stack_size=512 \
+    --heap_size=1024
+
+# 优化设置
+OPTIMIZATION = \
+    -O2 \
+    --no_unroll \
+    --no_inline
+
+# 调试设置
+DEBUG_FLAGS = \
+    -DDEBUG_MODE \
+    --debug \
+    --trace
+
+# 发布设置
+RELEASE_FLAGS = \
+    -DNDEBUG \
+    -O2 \
+    --no_debug
+
+# 目标文件
+OBJECTS = $(MAIN_SOURCES:.c=.o) $(MAIN_SOURCES:.cc=.o)
+
+# 默认目标
+all: $(PROJECT_NAME).hex
+
+# 编译规则
+%.o: %.c
+	icc8051 $(CFLAGS) $(INCLUDE_PATHS) -c $< -o $@
+
+%.o: %.cc
+	icc8051 $(CFLAGS) $(INCLUDE_PATHS) -c $< -o $@
+
+# 链接规则
+$(PROJECT_NAME).hex: $(OBJECTS)
+	ilink8051 $(LDFLAGS) $(MEMORY_CONFIG) $(OBJECTS) -o $@
+
+# 清理规则
+clean:
+	rm -f *.o *.hex *.map *.lst
+
+# 调试版本
+debug: CFLAGS += $(DEBUG_FLAGS)
+debug: $(PROJECT_NAME).hex
+
+# 发布版本
+release: CFLAGS += $(RELEASE_FLAGS)
+release: $(PROJECT_NAME).hex
+
+# 帮助信息
+help:
+	@echo "IAR EW8051 轨迹压缩项目"
+	@echo "可用目标:"
+	@echo "  all      - 编译项目 (默认)"
+	@echo "  debug    - 编译调试版本"
+	@echo "  release  - 编译发布版本"
+	@echo "  clean    - 清理生成的文件"
+	@echo "  help     - 显示此帮助信息"
+
+.PHONY: all debug release clean help
+
+
+

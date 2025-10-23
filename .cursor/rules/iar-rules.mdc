@@ -1,0 +1,89 @@
+---
+alwaysApply: true
+---
+# 规则：PC代码至IAR EW8051 (CC2530) 移植规范
+
+## 1. 总体目标 (General Goal)
+
+- **任务**: 将现有的PC端C++代码，修改并适配到嵌入式平台。
+- **目标平台**: IAR Embedded Workbench for 8051 (EW8051)
+- **目标硬件**: CC2530 (8051架构)
+
+## 2. 核心约束 (Core Constraints) - 禁止项
+
+- **[禁止] 更改算法逻辑**: 绝对不能修改项目代码中任何核心算法的数学逻辑、处理流程和调用逻辑。
+- **[禁止] 减少或更改功能**: 移植后的代码必须保留原始PC版本的所有核心功能。不得随意删减功能模块，除非该功能在嵌入式端不需要或无法做到，修改时给出明确原因并提示我。
+- **[禁止] 动态内存分配**: 谨慎使用 `malloc`, `calloc`, `realloc`, `free` 以及 `new` 和 `delete`。CC2530的RAM极其有限，尽量使用静态分配（全局变量、静态变量）或栈分配。
+- **[禁止] C++ 异常**: 移除所有 `try`, `catch`, `throw` 语句。应使用错误码（Error Codes）或状态枚举（Status Enums）来处理异常和错误。
+- **[禁止] 递归**: 尽量避免使用递归函数。8051的栈空间非常小，递归很容易导致栈溢出。如果必须使用，请确保递归深度较浅，或者将其重构为迭代（循环）实现。
+
+## 3. 代码转换规则 (Code Transformation Rules)
+
+- **[必须] 移除STL依赖**:
+    - **`std::vector`**: 替换为固定大小的长数组。如果必须动态增减，应使用基于静态数组实现的环形缓冲区（Circular Buffer）或简单队列。
+    - **`std::string`**: 替换为C风格的字符数组（`char[]` 或 `char*`）。所有字符串操作必须使用 `<string.h>` (如 `strcpy`, `strlen`, `sprintf` 等)，并严格注意缓冲区溢出。
+    - **`std::map` / `std::set`**: 替换为简单的查找表（如 `const` 数组）、哈希表（如果算法简单且空间可控）或有序数组（如果需要排序）。
+    - **`std::function` / `std::bind`**: 替换为C风格的函数指针。
+    - **`iostream` / `fstream`**: 移除所有C++流操作（`cin`, `cout`, `cerr`, `ifstream`, `ofstream`）。调试输出见第5节。
+
+- **[必须] 适配数据类型**:
+    - **使用标准整数类型**: 必须包含 `<stdint.h>` (IAR通常支持)。
+    - **替换原生类型**:
+        - `int` / `short` -> 明确使用 `int16_t` 或 `uint16_t` (IAR EW8051中 `int` 通常是16位)。
+        - `long` -> 明确使用 `int32_t` 或 `uint32_t`。
+        - `char` -> 如果用于存储数据（非字符），明确使用 `uint8_t` (无符号) 或 `int8_t` (有符号)。
+        - `size_t` / `bool` -> 确保IAR兼容。使用 `<stdbool.h>` 中的 `bool`, `true`, `false`。
+    - **性能优先**: 优先使用 `uint8_t` 和 `uint16_t`，因为CC2530是8位MCU，处理32位数据（`int32_t`）效率较低。
+
+- **[必须] 处理浮点数**:
+    - **谨慎使用 `float` / `double`**: 8051内核没有FPU（浮点单元）。所有浮点运算都是软件模拟，非常耗时且占用大量ROM。
+    - **优先使用定点数 (Fixed-Point)**: 如果可能，将浮点运算（如涉及小数的算法）转换为定点数（整数）运算。例如，`float x = 1.23` 可以表示为 `int16_t x_fixed = 123`（假设精度为0.01）。
+
+## 4. 平台特定规则 (Platform-Specific Rules - IAR & CC2530)
+
+- **[必须] 适配8051内存模型**:
+    - CC2530有多种内存空间（`CODE`, `DATA`, `IDATA`, `XDATA`）。
+    - **大型数据**: 大数组、大型结构体或 `const` 查找表，必须使用IAR关键字（如 `__xdata` 或 `__code`）将其放置在XDATA（外部RAM/Flash）或CODE（Flash）区，以节省宝贵的 `DATA`/`IDATA` (内部RAM)。
+    - **示例**: `const __code uint8_t lookup_table[] = { ... };` 或 `__xdata uint8_t large_buffer[1024];`
+- **[必须] 适配IAR编译器特性**:
+    - **中断服务程序(ISR)**: 使用IAR的 `#pragma vector` 语法来定义中断向量。
+    - **内联函数**: 合理使用 `__inline` 或 `static inline` 来优化频繁调用的小函数。
+    - **硬件寄存器**: 使用IAR提供的CC2530特定头文件（如 `<ioCC2530.h>`）来访问SFR（特殊功能寄存器）。
+
+- **[允许] 代码删减**:
+    - 可以（也应该）删除所有PC平台特有的代码，例如：
+        - 操作系统调用（Windows API, POSIX等）。
+        - 文件I/O (`fopen`, `fread`, `fclose`)。
+    - 可以删除项目中未被调用的函数、未使用的变量和文件。
+
+- **[允许] 新增和修改**:
+    - 允许新增代码文件，例如创建 `file_reader.h`, `file_reader.c` 等文件来在IAR 8051环境中读取数据。
+    - 允许修改现有文件，以调用新的函数，替换掉原有的PC平台API。
+
+## 5. 调试与测试规则 (Debugging & Testing Rules)
+
+- **[必须] 使用`printf`进行调试**:
+    - 在负责测试的代码文件（例如unit_test）中，必须直接使用 `printf` 来输出需要观察的变量值和压缩性能参数（压缩前数据大小，压缩后数据大小，压缩比等）。
+    - **格式要求**: 输出必须清晰易读，包含变量名和值。
+    - **示例**: `printf("测试数据: %u 个GPS点\n", test_size);` 或 `printf("压缩比: %lu%%\n", (unsigned long)compression_ratio);`
+- **[建议] 使用宏控制调试输出**:
+    - 建议使用预处理宏来包裹调试用的 `printf` 语句，以便在最终发布(Release)版本中一键禁用，减小ROM占用。
+    - **示例**:
+      ```c
+      #ifdef DEBUG_MODE
+      #define DEBUG_PRINTF(format, ...) printf(format, ##__VA_ARGS__)
+      #else
+      #define DEBUG_PRINTF(format, ...) (void)0
+      #endif
+      
+      // 在代码中使用
+      DEBUG_PRINTF("Module_Init OK\n");
+      ```
+- **[假设] `printf`重定向**:
+    - 我们假设 `printf` 已经通过实现底层的 `putchar` 函数被重定向到了UART（串口），以便在PC的Terminal（终端）上查看。
+
+## 6. 其他通用规则 (General Rules)
+
+- **[要求] 代码风格**: 保持与项目现有代码一致的编码风格（缩进、命名、括号位置等）。
+- **[要求] 添加注释**: 任何重大的修改（例如用数组替换`std::vector`，或使用`__xdata`）都必须添加清晰的注释，说明*为什么*要这样做。
+- **[要求] 资源优化**: 时刻关注ROM（代码空间）和RAM（数据空间）的占用。优先使用更小的数据类型，优化数据结构，复用缓冲区。
