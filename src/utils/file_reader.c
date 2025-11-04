@@ -7,10 +7,10 @@
 // 由于CC2530内存限制，我们使用静态数组存储轨迹数据
 #define MAX_TRAJECTORY_POINTS 200  // 从2000减少到200
 
-// 静态存储轨迹数据 - 使用XDATA节省内部RAM
-__xdata static trajectory_point_t trajectory_data[MAX_TRAJECTORY_POINTS];
-__xdata static uint16_t trajectory_count = 0;
-__xdata static bool data_loaded = false;
+// 静态存储轨迹数据 - 移除__xdata，使用CODE区域（ROM），避免XDATA空间不足
+static trajectory_point_t trajectory_data[MAX_TRAJECTORY_POINTS];
+static uint16_t trajectory_count = 0;
+static bool data_loaded = false;
 
 // 预加载轨迹数据（在实际嵌入式环境中，这可能是从EEPROM或Flash读取）
 static bool load_trajectory_data_internal(const char* filename) {

@@ -1,49 +1,56 @@
 #include "input_bit_stream.h"
+#include <string.h>
 #include <stdio.h>
+#include <math.h>
 
-// IAR适配：使用自定义字节序转换函数
-static inline uint32_t be32toh(uint32_t big_endian_32bits) {
-    return ((big_endian_32bits & 0xFF000000) >> 24) |
-           ((big_endian_32bits & 0x00FF0000) >> 8)  |
-           ((big_endian_32bits & 0x0000FF00) << 8)  |
-           ((big_endian_32bits & 0x000000FF) << 24);
-}
+// IAR适配：使用LSB-first位流（与参考代码一致）
 
 InputBitStream::InputBitStream() {
   buffer_ = 0;
+  cursor_ = 0;  // 字节索引
+  bit_in_buffer_ = 0;  // 当前字节内的位索引（0-7）
+  total_bits_read_ = 0;
+  max_valid_bits_ = 0;
+}
+
+void InputBitStream::Clear() {
+  data_ = Array<uint32_t>(0);
+  buffer_ = 0;
   cursor_ = 0;
   bit_in_buffer_ = 0;
+  total_bits_read_ = 0;
+  max_valid_bits_ = 0;
 }
 
-InputBitStream::InputBitStream(uint8_t *raw_data, uint32_t size) {
-  data_ = Array<uint32_t>((uint32_t)ceilf((float)size / sizeof(uint32_t)));
-  if (data_.is_valid()) {
-    memcpy(data_.begin(), raw_data, size);
-    for (uint32_t i = 0; i < data_.length(); i++) {
-      data_[i] = be32toh(data_[i]);
-    }
-    buffer_ = data_[0];
-    cursor_ = 1;
-    bit_in_buffer_ = 32;
-  } else {
-    buffer_ = 0;
-    cursor_ = 0;
-    bit_in_buffer_ = 0;
-  }
-}
-
+// LSB-first读取：从最低位开始读取
 uint32_t InputBitStream::Peek(uint32_t len) {
   if (len == 0) return 0;
-  if (len > 32) len = 32; // 限制最大32位
+  if (len > 32) len = 32;
   
-  // 修复位操作逻辑：与Write函数格式匹配
-  uint32_t result;
-  if (len == 32) {
-    result = buffer_;
-  } else {
-    // 从高位开始读取len位，与Write函数格式匹配
-    uint32_t mask = (len == 32) ? 0xFFFFFFFF : ((1U << len) - 1);
-    result = (buffer_ >> (32 - len)) & mask;
+  uint8_t* byte_buffer = (uint8_t*)data_.begin();
+  if (byte_buffer == NULL) return 0;
+  
+  uint32_t result = 0;
+  uint32_t temp_cursor = cursor_;
+  uint32_t temp_bit_index = bit_in_buffer_;
+  
+  // 预览len位
+  for (uint32_t i = 0; i < len; i++) {
+    if (temp_cursor >= data_.length() * 4) {
+      // 没有更多数据，剩余位默认为0
+      break;
+    }
+    
+    // 读取当前字节的当前位
+    uint8_t current_byte = byte_buffer[temp_cursor];
+    uint8_t bit = (current_byte >> temp_bit_index) & 1;
+    result |= ((uint32_t)bit << i);
+    
+    temp_bit_index++;
+    if (temp_bit_index >= 8) {
+      temp_cursor++;
+      temp_bit_index = 0;
+    }
   }
   
   return result;
@@ -52,32 +59,34 @@ uint32_t InputBitStream::Peek(uint32_t len) {
 void InputBitStream::Forward(uint32_t len) {
   if (len == 0) return;
   
-  // 如果请求的位数超过缓冲区中的位数，限制到可用位数
-  if (len > bit_in_buffer_) {
-    len = bit_in_buffer_;
+  // 检查max_valid_bits_限制
+  if (max_valid_bits_ > 0 && total_bits_read_ >= max_valid_bits_) {
+    return;
   }
   
-  // 左移缓冲区，移除已读取的位（与Write函数格式匹配）
-  buffer_ <<= len;
-  bit_in_buffer_ -= len;
+  if (max_valid_bits_ > 0 && total_bits_read_ + len > max_valid_bits_) {
+    len = max_valid_bits_ - total_bits_read_;
+    if (len == 0) return;
+  }
   
-  // 如果缓冲区中的位数不足32位，尝试加载更多数据
-  if (bit_in_buffer_ < 32 && cursor_ < data_.length()) {
-    uint32_t next_word = data_[cursor_++];
-    buffer_ |= (next_word << bit_in_buffer_);
-    bit_in_buffer_ += 32;
+  // 前进len位
+  bit_in_buffer_ += len;
+  total_bits_read_ += len;
+  
+  // 更新字节位置
+  while (bit_in_buffer_ >= 8) {
+    cursor_++;
+    bit_in_buffer_ -= 8;
   }
 }
 
 uint32_t InputBitStream::ReadLong(uint32_t len) {
-  if (len == 0) return 0;
-  if (len > 32) {
-    // 对于超过32位的情况，只读取低32位
-    uint32_t ret = Peek(32);
-    Forward(32);
-    return ret;
-  }
   uint32_t ret = Peek(len);
+  if (len > 16) {
+    printf("ReadLong: Peek(%lu)=0x%08lX, cursor_=%lu, bit_in_buffer_=%lu\n",
+           (unsigned long)len, (unsigned long)ret, 
+           (unsigned long)cursor_, (unsigned long)bit_in_buffer_);
+  }
   Forward(len);
   return ret;
 }
@@ -89,35 +98,69 @@ uint32_t InputBitStream::ReadInt(uint32_t len) {
 }
 
 bool InputBitStream::ReadBit() {
-  bool ret = (buffer_ & 0x1) != 0;  // 修复：从低位开始读取，与WriteBit格式匹配
+  // 检查是否已经达到最大有效位数
+  if (max_valid_bits_ > 0 && total_bits_read_ >= max_valid_bits_) {
+    return false;
+  }
+  
+  bool ret = (Peek(1) != 0);
   Forward(1);
   return ret;
 }
 
+bool InputBitStream::HasMoreData() const {
+  // 如果设置了最大有效位数，检查是否已经达到
+  if (max_valid_bits_ > 0 && total_bits_read_ >= max_valid_bits_) {
+    return false;
+  }
+  // 检查是否还有数据
+  return cursor_ < data_.length() * 4;
+}
+
 void InputBitStream::SetBuffer(const Array<uint8_t> &new_buffer) {
   if (new_buffer.is_valid()) {
-  printf("SetBuffer: input length=%lu\n", (unsigned long)new_buffer.length());
-    data_ = Array<uint32_t>((uint32_t)ceilf((float)new_buffer.length() / sizeof(uint32_t)));
+    // 重置状态
+    buffer_ = 0;
+    cursor_ = 0;
+    bit_in_buffer_ = 0;
+    total_bits_read_ = 0;
+    max_valid_bits_ = 0;
+    
+    // 计算需要的uint32_t数量
+    uint16_t words_needed = (uint16_t)ceilf(new_buffer.length() / 4.0f);
+    
+    // 释放旧的data_
     if (data_.is_valid()) {
-      // 重新设计数据存储格式：按字节存储位流数据
-      uint8_t* input_ptr = (uint8_t*)new_buffer.begin();
-      
-      // 将字节数组转换为32位数据，确保不超出边界
-      uint32_t words_to_copy = (new_buffer.length() + 3) / 4;
-      if (words_to_copy > data_.length()) words_to_copy = data_.length();
-      
-      for (uint32_t i = 0; i < words_to_copy; i++) {
-        uint32_t word = 0;
-        for (uint32_t j = 0; j < 4 && (i * 4 + j) < new_buffer.length(); j++) {
-          // 修复：使用大端序格式，与GetBuffer格式匹配
-          word |= ((uint32_t)input_ptr[i * 4 + j]) << ((3 - j) * 8);
-        }
-        data_[i] = word;
-      }
-      printf("SetBuffer: data_[0]=0x%08lX\n", (unsigned long)data_[0]);
-      buffer_ = data_[0];
-      cursor_ = 1;
-      bit_in_buffer_ = 32;  // 修复：初始化为32，表示缓冲区有32位可用数据
+      data_ = Array<uint32_t>(0);
     }
+    
+    // 分配新的data_ - 使用swap避免赋值操作符问题
+    Array<uint32_t> temp_array(words_needed);
+    if (!temp_array.is_valid()) {
+      printf("SetBuffer: ERROR - failed to create array of %u words\n", words_needed);
+      return;
+    }
+    data_.swap(temp_array);
+    
+    // 直接复制字节数据
+    uint32_t* data_ptr = data_.begin();
+    const uint8_t* src_ptr = new_buffer.begin();
+    if (data_ptr && src_ptr) {
+      memset(data_ptr, 0, words_needed * 4);
+      memcpy(data_ptr, src_ptr, new_buffer.length());
+      
+      printf("SetBuffer: copied %u bytes, data_[0]=0x%08lX\n", 
+             new_buffer.length(), (unsigned long)data_ptr[0]);
+    }
+  } else {
+    buffer_ = 0;
+    cursor_ = 0;
+    bit_in_buffer_ = 0;
+    total_bits_read_ = 0;
+    max_valid_bits_ = 0;
   }
+}
+
+void InputBitStream::SetValidBits(uint32_t valid_bits) {
+  max_valid_bits_ = valid_bits;
 }

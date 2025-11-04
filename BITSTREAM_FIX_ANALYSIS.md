@@ -79,3 +79,9 @@ Write: after buffer_=0x00000000, bit_in_buffer_=16  // 错误：数据丢失
 
 
 
+
+
+
+
+
+

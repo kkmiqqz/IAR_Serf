@@ -1,129 +1,120 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
     <fileVersion>2</fileVersion>
-    <fileChecksum>782286520</fileChecksum>
+    <fileChecksum>1182891062</fileChecksum>
     <configuration>
         <name>Debug</name>
         <outputs>
-            <file>$PROJ_DIR$\src\utils\input_bit_stream.cc</file>
-            <file>$PROJ_DIR$\src\utils\elias_gamma_codec.h</file>
-            <file>$PROJ_DIR$\src\utils\file_reader.c</file>
-            <file>$PROJ_DIR$\src\utils\file_reader.h</file>
-            <file>$PROJ_DIR$\src\utils\zig_zag_codec.h</file>
-            <file>$PROJ_DIR$\src\utils\output_bit_stream.cc</file>
-            <file>$PROJ_DIR$\src\utils\elias_gamma_codec.cc</file>
-            <file>$PROJ_DIR$\src\utils\input_bit_stream.h</file>
-            <file>$PROJ_DIR$\src\decompressor\serf_qt_decompressor.cc</file>
-            <file>$PROJ_DIR$\src\utils\array.h</file>
-            <file>$PROJ_DIR$\src\decompressor\serf_qt_decompressor.h</file>
-            <file>$PROJ_DIR$\src\utils\double.h</file>
-            <file>$PROJ_DIR$\src\utils\output_bit_stream.h</file>
-            <file>$PROJ_DIR$\src\compressor\serf_qt_compressor.h</file>
-            <file>$PROJ_DIR$\src\compressor\serf_qt_compressor.cc</file>
-            <file>$TOOLKIT_DIR$\inc\dlib\c\stdbool.h</file>
-            <file>$TOOLKIT_DIR$\inc\dlib\c\stdint.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\output_bit_stream.pbi</file>
-            <file>$PROJ_DIR$\test\baselines\chimp128\output_bit_stream.h</file>
-            <file>$PROJ_DIR$\test\baselines\chimp128\chimp_compressor.h</file>
-            <file>$PROJ_DIR$\test\baselines\chimp128\chimp_compressor.cc</file>
-            <file>$TOOLKIT_DIR$\inc\dlib\c\xtgmath.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\input_bit_stream.r51</file>
-            <file>$PROJ_DIR$\test\unit_test\iar_serf_test.c</file>
-            <file>$TOOLKIT_DIR$\inc\dlib\c\cstdint</file>
-            <file>$TOOLKIT_DIR$\inc\dlib\c\stdlib.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\file_reader.r51</file>
-            <file>$TOOLKIT_DIR$\inc\dlib\c\math.h</file>
-            <file>$PROJ_DIR$\test\baselines\chimp128\double.h</file>
-            <file>$TOOLKIT_DIR$\inc\dlib\c\stdio.h</file>
-            <file>$PROJ_DIR$\test\baselines\chimp128\array.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\elias_gamma_codec.pbi</file>
-            <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Defaults.h</file>
-            <file>$TOOLKIT_DIR$\inc\dlib\c\ystdio.h</file>
+            <file>$PROJ_DIR$\Debug\Exe\serf-all.a51</file>
+            <file>$PROJ_DIR$\Debug\Obj\output_bit_stream.__cstat.et</file>
+            <file>$PROJ_DIR$\Debug\List\serf-all.map</file>
+            <file>$PROJ_DIR$\Debug\Obj\file_reader.__cstat.et</file>
+            <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Threads.h</file>
+            <file>$TOOLKIT_DIR$\inc\dlib\c\ycheck.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\elias_gamma_codec.__cstat.et</file>
+            <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Product.h</file>
             <file>$TOOLKIT_DIR$\inc\dlib\c\ysizet.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\input_bit_stream.pbi</file>
-            <file>$PROJ_DIR$\Debug\Obj\file_reader.pbi</file>
-            <file>$TOOLKIT_DIR$\inc\dlib\c\ymath.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\output_bit_stream.r51</file>
-            <file>$TOOLKIT_DIR$\inc\dlib\c\float.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\serf_qt_compressor.__cstat.et</file>
+            <file>$PROJ_DIR$\Debug\Obj\serf-all.pbd</file>
+            <file>$PROJ_DIR$\Debug\Obj\serf_qt_compressor.pbi</file>
+            <file>$PROJ_DIR$\Debug\Obj\elias_gamma_codec.pbi</file>
             <file>$PROJ_DIR$\Debug\Obj\iar_serf_test.__cstat.et</file>
             <file>$PROJ_DIR$\Debug\Obj\iar_serf_test.pbi</file>
-            <file>$TOOLKIT_DIR$\lib\dlib\dl8051Normal.h</file>
-            <file>$TOOLKIT_DIR$\inc\dlib\c\yvals.h</file>
+            <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Defaults.h</file>
             <file>$PROJ_DIR$\Debug\Exe\serf-all.d51</file>
-            <file>$PROJ_DIR$\Debug\List\serf-all.map</file>
-            <file>$TOOLKIT_DIR$\inc\dlib\c\ycheck.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\file_reader.r51</file>
             <file>$PROJ_DIR$\Debug\Obj\serf_qt_decompressor.__cstat.et</file>
-            <file>$TOOLKIT_DIR$\lib\dlib\dl-pli-blxd-1e16x01n.r51</file>
-            <file>$PROJ_DIR$\Debug\Obj\elias_gamma_codec.__cstat.et</file>
-            <file>$PROJ_DIR$\Debug\Obj\serf-all.pbd</file>
-            <file>$PROJ_DIR$\Debug\Obj\serf_qt_compressor.r51</file>
-            <file>$PROJ_DIR$\Debug\Exe\serf-all.a51</file>
-            <file>$PROJ_DIR$\Debug\Obj\input_bit_stream.__cstat.et</file>
             <file>$PROJ_DIR$\Debug\Obj\elias_gamma_codec.r51</file>
-            <file>$PROJ_DIR$\Debug\Obj\output_bit_stream.__cstat.et</file>
-            <file>$PROJ_DIR$\Debug\Obj\serf_qt_compressor.pbi</file>
+            <file>$TOOLKIT_DIR$\inc\dlib\c\yvals.h</file>
+            <file>$TOOLKIT_DIR$\inc\dlib\c\xtgmath.h</file>
+            <file>$TOOLKIT_DIR$\lib\dlib\dl8051Normal.h</file>
+            <file>$TOOLKIT_DIR$\inc\dlib\c\stdlib.h</file>
             <file>$TOOLKIT_DIR$\inc\dlib\c\string.h</file>
-            <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Threads.h</file>
-            <file>$PROJ_DIR$\Debug\Obj\serf_qt_decompressor.r51</file>
-            <file>$PROJ_DIR$\Debug\Obj\serf_qt_decompressor.pbi</file>
-            <file>$TOOLKIT_DIR$\inc\dlib\c\xencoding_limits.h</file>
-            <file>$TOOLKIT_DIR$\config\devices\Texas Instruments\lnk51ew_cc2530F256_banked.xcl</file>
-            <file>$PROJ_DIR$\Debug\Obj\file_reader.__cstat.et</file>
-            <file>$PROJ_DIR$\Debug\Obj\serf_qt_compressor.__cstat.et</file>
+            <file>$PROJ_DIR$\Debug\Obj\file_reader.pbi</file>
             <file>$PROJ_DIR$\Debug\Obj\iar_serf_test.r51</file>
-            <file>$TOOLKIT_DIR$\inc\dlib\c\DLib_Product.h</file>
+            <file>$TOOLKIT_DIR$\inc\dlib\c\stdio.h</file>
+            <file>$TOOLKIT_DIR$\inc\dlib\c\xencoding_limits.h</file>
+            <file>$TOOLKIT_DIR$\lib\dlib\dl-pli-blxd-1e16x01n.r51</file>
+            <file>$TOOLKIT_DIR$\inc\dlib\c\stdint.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\input_bit_stream.__cstat.et</file>
+            <file>$TOOLKIT_DIR$\inc\dlib\c\stdbool.h</file>
+            <file>$PROJ_DIR$\src\utils\zig_zag_codec.h</file>
+            <file>$TOOLKIT_DIR$\inc\dlib\c\math.h</file>
+            <file>$PROJ_DIR$\src\utils\input_bit_stream.cc</file>
+            <file>$PROJ_DIR$\Debug\Obj\output_bit_stream.pbi</file>
+            <file>$PROJ_DIR$\Debug\Obj\input_bit_stream.pbi</file>
+            <file>$PROJ_DIR$\Debug\Obj\serf_qt_decompressor.pbi</file>
+            <file>$PROJ_DIR$\Debug\Obj\input_bit_stream.r51</file>
+            <file>$TOOLKIT_DIR$\inc\dlib\c\ymath.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\output_bit_stream.r51</file>
+            <file>$PROJ_DIR$\src\utils\output_bit_stream.cc</file>
+            <file>$PROJ_DIR$\Debug\Obj\serf_qt_compressor.r51</file>
+            <file>$PROJ_DIR$\test\unit_test\iar_serf_test.c</file>
+            <file>$TOOLKIT_DIR$\inc\dlib\c\ystdio.h</file>
+            <file>$PROJ_DIR$\src\utils\output_bit_stream.h</file>
+            <file>$PROJ_DIR$\Debug\Obj\serf_qt_decompressor.r51</file>
+            <file>$TOOLKIT_DIR$\inc\dlib\c\float.h</file>
+            <file>$TOOLKIT_DIR$\config\devices\Texas Instruments\lnk51ew_cc2530F256_banked.xcl</file>
+            <file>$PROJ_DIR$\src\utils\input_bit_stream.h</file>
+            <file>$PROJ_DIR$\src\decompressor\serf_qt_decompressor.h</file>
+            <file>$PROJ_DIR$\src\utils\elias_gamma_codec.h</file>
+            <file>$PROJ_DIR$\src\compressor\serf_qt_compressor.h</file>
+            <file>$PROJ_DIR$\src\utils\file_reader.c</file>
+            <file>$PROJ_DIR$\src\utils\double.h</file>
+            <file>$PROJ_DIR$\src\compressor\serf_qt_compressor.cc</file>
+            <file>$PROJ_DIR$\src\utils\file_reader.h</file>
+            <file>$PROJ_DIR$\src\decompressor\serf_qt_decompressor.cc</file>
+            <file>$PROJ_DIR$\src\utils\array.h</file>
+            <file>$PROJ_DIR$\src\utils\elias_gamma_codec.cc</file>
         </outputs>
+        <file>
+            <name>[ROOT_NODE]</name>
+            <outputs>
+                <tool>
+                    <name>XLINK</name>
+                    <file> 16 2 0</file>
+                </tool>
+            </outputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\Debug\Exe\serf-all.d51</name>
+            <outputs>
+                <tool>
+                    <name>XLINK</name>
+                    <file> 2 0</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>XLINK</name>
+                    <file> 49 19 17 26 39 41 43 47 29</file>
+                </tool>
+            </inputs>
+        </file>
         <file>
             <name>$PROJ_DIR$\src\utils\input_bit_stream.cc</name>
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 22</file>
+                    <file> 39</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 35</file>
+                    <file> 37</file>
                 </tool>
                 <tool>
                     <name>__cstat</name>
-                    <file> 53</file>
+                    <file> 31</file>
                 </tool>
             </outputs>
             <inputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 7 16 46 43 32 42 66 61 58 15 25 34 57 27 37 21 9 29 33</file>
+                    <file> 50 30 5 20 15 22 7 28 4 32 23 8 24 34 40 21 59 27 45</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 43 25 34 15 66 46 58 21 16 27 32 42 29 57 9 61 37 7 33</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\utils\file_reader.c</name>
-            <outputs>
-                <tool>
-                    <name>ICC8051</name>
-                    <file> 26</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 36</file>
-                </tool>
-                <tool>
-                    <name>__cstat</name>
-                    <file> 63</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICC8051</name>
-                    <file> 3 16 46 43 32 42 66 61 58 15 29 34 33 57 25</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 32 61 42 33 46 57 15 58 66 43 29 25 16 34 3</file>
+                    <file> 7 32 30 59 4 20 21 27 24 5 15 22 28 34 23 8 40 50 45</file>
                 </tool>
             </inputs>
         </file>
@@ -132,124 +123,25 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 38</file>
+                    <file> 41</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 17</file>
+                    <file> 36</file>
                 </tool>
                 <tool>
                     <name>__cstat</name>
-                    <file> 55</file>
+                    <file> 1</file>
                 </tool>
             </outputs>
             <inputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 12 16 46 43 32 42 66 61 58 15 9 25 34 57 29 33</file>
+                    <file> 46 30 5 20 15 22 7 28 4 32 59 24 8 27 45 34 40 21</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 15 34 25 46 29 57 43 61 16 12 9 32 58 42 66 33</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\utils\elias_gamma_codec.cc</name>
-            <outputs>
-                <tool>
-                    <name>ICC8051</name>
-                    <file> 54</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 31</file>
-                </tool>
-                <tool>
-                    <name>__cstat</name>
-                    <file> 49</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICC8051</name>
-                    <file> 1 16 46 43 32 42 66 61 58 27 37 21 12 15 9 25 34 57 7 11 39</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 46 15 16 12 11 43 61 21 9 57 34 25 27 7 32 58 42 66 37 39 1</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\decompressor\serf_qt_decompressor.cc</name>
-            <outputs>
-                <tool>
-                    <name>ICC8051</name>
-                    <file> 59</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 60</file>
-                </tool>
-                <tool>
-                    <name>__cstat</name>
-                    <file> 47</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICC8051</name>
-                    <file> 10 16 46 43 32 42 66 61 58 15 11 39 7 25 34 57 27 37 21 9 4 1 12 29 33</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 46 7 43 61 57 12 15 29 1 16 9 21 25 11 4 32 58 42 66 39 27 34 37 10 33</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\src\compressor\serf_qt_compressor.cc</name>
-            <outputs>
-                <tool>
-                    <name>ICC8051</name>
-                    <file> 51</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 56</file>
-                </tool>
-                <tool>
-                    <name>__cstat</name>
-                    <file> 64</file>
-                </tool>
-            </outputs>
-            <inputs>
-                <tool>
-                    <name>ICC8051</name>
-                    <file> 13 16 46 43 32 42 66 61 58 15 27 37 21 12 9 25 34 57 11 39 1 7 4 29 33</file>
-                </tool>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 9 66 16 58 43 46 29 27 1 32 42 21 57 34 7 25 15 12 11 4 61 37 13 39 33</file>
-                </tool>
-            </inputs>
-        </file>
-        <file>
-            <name>[ROOT_NODE]</name>
-            <outputs>
-                <tool>
-                    <name>XLINK</name>
-                    <file> 44 45 52</file>
-                </tool>
-            </outputs>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\test\baselines\chimp128\chimp_compressor.cc</name>
-            <inputs>
-                <tool>
-                    <name>BICOMP</name>
-                    <file> 39 46 21 66 43 15 28 61 42 25 16 27 18 30 32 58 37 24 19 34</file>
+                    <file> 20 5 30 28 27 59 24 8 40 34 32 15 4 22 7 45 21 46</file>
                 </tool>
             </inputs>
         </file>
@@ -258,40 +150,133 @@
             <outputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 65</file>
+                    <file> 26</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 41</file>
+                    <file> 14</file>
                 </tool>
                 <tool>
                     <name>__cstat</name>
-                    <file> 40</file>
+                    <file> 13</file>
                 </tool>
             </outputs>
             <inputs>
                 <tool>
                     <name>ICC8051</name>
-                    <file> 29 46 43 32 42 66 61 58 34 33 16 15 27 37 21 13 12 9 25 57 11 39 1 7 4 10 3</file>
+                    <file> 27 5 20 15 22 7 28 4 8 45 30 32 34 40 21 53 46 59 24 55 48 52 50 23 33 51 57</file>
                 </tool>
                 <tool>
                     <name>BICOMP</name>
-                    <file> 42 46 11 25 43 32 9 37 57 13 16 15 3 34 58 66 1 27 10 33 61 21 39 12 7 29 4</file>
+                    <file> 30 33 5 55 45 53 32 57 20 28 21 24 34 51 8 15 4 22 7 40 46 59 48 27 52 50 23</file>
                 </tool>
             </inputs>
         </file>
         <file>
-            <name>$PROJ_DIR$\Debug\Exe\serf-all.d51</name>
+            <name>$PROJ_DIR$\src\utils\file_reader.c</name>
             <outputs>
                 <tool>
-                    <name>XLINK</name>
-                    <file> 45 52</file>
+                    <name>ICC8051</name>
+                    <file> 17</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 25</file>
+                </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 3</file>
                 </tool>
             </outputs>
             <inputs>
                 <tool>
-                    <name>XLINK</name>
-                    <file> 62 54 26 65 22 38 51 59 48</file>
+                    <name>ICC8051</name>
+                    <file> 57 30 5 20 15 22 7 28 4 32 27 8 45 24 23</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 28 8 24 30 20 5 27 23 32 15 4 22 7 45 57</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\compressor\serf_qt_compressor.cc</name>
+            <outputs>
+                <tool>
+                    <name>ICC8051</name>
+                    <file> 43</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 11</file>
+                </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 9</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICC8051</name>
+                    <file> 53 30 5 20 15 22 7 28 4 32 34 40 21 46 59 24 8 27 45 55 48 52 50 23 33</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 55 20 59 7 24 30 4 5 27 34 52 15 22 21 32 23 46 33 28 40 8 48 53 45 50</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\decompressor\serf_qt_decompressor.cc</name>
+            <outputs>
+                <tool>
+                    <name>ICC8051</name>
+                    <file> 47</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 38</file>
+                </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 18</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICC8051</name>
+                    <file> 51 30 5 20 15 22 7 28 4 32 55 48 50 23 8 24 34 40 21 59 27 45 33 52 46</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 32 7 23 5 46 52 4 20 48 28 27 50 15 22 30 34 21 8 55 33 59 24 40 51 45</file>
+                </tool>
+            </inputs>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\src\utils\elias_gamma_codec.cc</name>
+            <outputs>
+                <tool>
+                    <name>ICC8051</name>
+                    <file> 19</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 12</file>
+                </tool>
+                <tool>
+                    <name>__cstat</name>
+                    <file> 6</file>
+                </tool>
+            </outputs>
+            <inputs>
+                <tool>
+                    <name>ICC8051</name>
+                    <file> 52 30 5 20 15 22 7 28 4 34 40 21 46 32 59 24 8 27 45 50 23 55 48</file>
+                </tool>
+                <tool>
+                    <name>BICOMP</name>
+                    <file> 15 22 30 46 5 40 27 45 55 4 7 20 23 34 50 28 21 59 32 8 52 24 48</file>
                 </tool>
             </inputs>
         </file>

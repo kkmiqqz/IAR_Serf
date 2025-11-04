@@ -24,7 +24,7 @@ class SerfQtCompressor {
 
   void AddValue(float v);
 
-  Array<uint8_t> compressed_bytes();
+  const Array<uint8_t>& compressed_bytes() const;
 
   void Close();
 

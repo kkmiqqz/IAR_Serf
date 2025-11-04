@@ -39,6 +39,9 @@ class OutputBitStream {
   void Flush();
 
   Array<uint8_t> GetBuffer(uint32_t len);
+  
+  // 新增：直接复制数据到目标缓冲区，避免临时对象
+  bool CopyBufferTo(uint8_t* dest, uint32_t len);
 
   void Refresh();
 

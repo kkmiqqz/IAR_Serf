@@ -17,7 +17,13 @@ class SerfQtDecompressor {
   ~SerfQtDecompressor();
   
   // IAR适配：返回固定大小数组替代std::vector
-  Array<float> Decompress(const Array<uint8_t> &bs);
+  Array<float> Decompress(const Array<uint8_t> &bs, uint32_t valid_bits = 0);
+  
+  // 通过引用参数返回结果，避免Array拷贝问题
+  bool DecompressTo(const Array<uint8_t> &bs, Array<float> &output, uint32_t valid_bits = 0);
+  
+  // 清除内部缓冲区，释放内存
+  void Clear();
 
  private:
   uint16_t block_size_;

@@ -25,23 +25,50 @@ void SerfQtCompressor::AddValue(float v) {
   int32_t q = (int32_t)roundf((v - pre_value_) / (2.0f * kMaxDiff));
   float recoverValue = pre_value_ + 2.0f * kMaxDiff * (float)q;
   
-  compressed_size_in_bits_ += EliasGammaCodec::Encode(ZigZagCodec::Encode(q) + 1,
-                                                      output_bit_stream_);
+  int32_t zigzag_value = ZigZagCodec::Encode(q) + 1;
+  int bits_written = EliasGammaCodec::Encode(zigzag_value, output_bit_stream_);
+  printf("AddValue: q=%ld, zigzag_value=%ld, bits_written=%d, total_bits=%lu\n", 
+         (long)q, (long)zigzag_value, bits_written, 
+         (unsigned long)(compressed_size_in_bits_ + bits_written));
+  compressed_size_in_bits_ += bits_written;
   pre_value_ = recoverValue;
 }
 
-Array<uint8_t> SerfQtCompressor::compressed_bytes() {
+const Array<uint8_t>& SerfQtCompressor::compressed_bytes() const {
   return compressed_bytes_;
 }
 
 void SerfQtCompressor::Close() {
   output_bit_stream_->Flush();
   uint32_t buffer_len = (uint32_t)ceilf(compressed_size_in_bits_ / 8.0f);
-  printf("Close: compressed_size_in_bits=%lu, buffer_len=%lu\n", 
-         (unsigned long)compressed_size_in_bits_, (unsigned long)buffer_len);
-  compressed_bytes_ = output_bit_stream_->GetBuffer(buffer_len);
-  printf("Close: compressed_bytes valid=%s, length=%lu\n", 
-         compressed_bytes_.is_valid() ? "yes" : "no", (unsigned long)compressed_bytes_.length());
+  
+  // 先释放compressed_bytes_的缓冲区（如果存在）
+  if (compressed_bytes_.is_valid()) {
+    compressed_bytes_ = Array<uint8_t>(0);
+  }
+  
+  // 创建新的缓冲区 - 使用swap避免赋值操作符的问题
+  Array<uint8_t> temp_array(buffer_len);
+  if (temp_array.is_valid()) {
+    compressed_bytes_.swap(temp_array);
+  }
+  
+  if (!compressed_bytes_.is_valid()) {
+    output_bit_stream_->Refresh();
+    first_ = true;
+    pre_value_ = 2.0f;
+    stored_compressed_size_in_bits_ = compressed_size_in_bits_;
+    compressed_size_in_bits_ = 0;
+    return;
+  }
+  
+  // 直接复制数据到compressed_bytes_，避免临时对象
+  uint8_t* dest_ptr = compressed_bytes_.begin();
+  bool copy_success = output_bit_stream_->CopyBufferTo(dest_ptr, buffer_len);
+  if (!copy_success) {
+    printf("Close: CopyBufferTo failed\n");
+  }
+  
   output_bit_stream_->Refresh();
   first_ = true;
   pre_value_ = 2.0f;
