@@ -82,11 +82,6 @@ void InputBitStream::Forward(uint32_t len) {
 
 uint32_t InputBitStream::ReadLong(uint32_t len) {
   uint32_t ret = Peek(len);
-  if (len > 16) {
-    printf("ReadLong: Peek(%lu)=0x%08lX, cursor_=%lu, bit_in_buffer_=%lu\n",
-           (unsigned long)len, (unsigned long)ret, 
-           (unsigned long)cursor_, (unsigned long)bit_in_buffer_);
-  }
   Forward(len);
   return ret;
 }
@@ -148,9 +143,6 @@ void InputBitStream::SetBuffer(const Array<uint8_t> &new_buffer) {
     if (data_ptr && src_ptr) {
       memset(data_ptr, 0, words_needed * 4);
       memcpy(data_ptr, src_ptr, new_buffer.length());
-      
-      printf("SetBuffer: copied %u bytes, data_[0]=0x%08lX\n", 
-             new_buffer.length(), (unsigned long)data_ptr[0]);
     }
   } else {
     buffer_ = 0;

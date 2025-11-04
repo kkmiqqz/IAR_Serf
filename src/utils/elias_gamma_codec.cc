@@ -29,36 +29,28 @@ int EliasGammaCodec::Encode(int32_t number, OutputBitStream *output_bit_stream_p
   } else {
     n = (int)floorf(log2f((float)number));
   }
-  printf("EliasGamma::Encode: number=%ld (0x%lX), n=%d\n", 
-         (long)number, (unsigned long)number, n);
   
-  // 标准Elias Gamma编码：
+  // 标准Elias Gamma编码（LSB-first）：
   // 1. 写入n个0
-  // 2. 写入number的完整二进制表示（n+1位）
+  // 2. 写入number的完整二进制表示（n+1位，从LSB开始）
   
   // 写入n个0
   if (n > 0) {
     compressed_size_in_bits += output_bit_stream_ptr->WriteInt(0, n);
-    printf("  wrote %d zeros\n", n);
   }
   
   // 写入完整的number（n+1位）
-  printf("  writing number 0x%lX as %d bits\n", (unsigned long)number, n+1);
   compressed_size_in_bits += output_bit_stream_ptr->WriteInt((uint32_t)number, n + 1);
   
-  printf("EliasGamma::Encode: wrote %d bits total (n=%d zeros + %d bits number)\n", 
-         compressed_size_in_bits, n, n+1);
   return compressed_size_in_bits;
 }
 
 int32_t EliasGammaCodec::Decode(InputBitStream *input_bit_stream_ptr) {
   int n = 0;
-  // 计数前导0 - 完全按照原始实现
-  // while (!input_bit_stream_ptr->ReadBit()) n++;
-  printf("EliasGamma::Decode: counting leading zeros...\n");
+  // 计数前导0（LSB-first）
   while (true) {
     if (!input_bit_stream_ptr->HasMoreData()) {
-      printf("EliasGamma::Decode: ERROR - no more data while counting zeros (n=%d)!\n", n);
+      // 数据流结束
       return 0;
     }
     
@@ -68,7 +60,6 @@ int32_t EliasGammaCodec::Decode(InputBitStream *input_bit_stream_ptr) {
       n++;
     } else {
       // 遇到1，停止循环
-      printf("EliasGamma::Decode: found 1 after %d zeros\n", n);
       break;
     }
   }
@@ -79,17 +70,13 @@ int32_t EliasGammaCodec::Decode(InputBitStream *input_bit_stream_ptr) {
   // 重建：result = 1 | (remainder << 1)
   
   if (n == 0) {
-    printf("EliasGamma::Decode: n=0, result=1\n");
     return 1;
   }
   
-  printf("EliasGamma::Decode: n=%d, reading %d more bits\n", n, n);
   uint32_t remainder = input_bit_stream_ptr->ReadInt(n);
   
   // LSB-first：遇到的1是number的bit0（LSB），remainder是bit1到bit_n
   // 重建：result = 1 | (remainder << 1)
   uint32_t result = 1 | (remainder << 1);
-  printf("EliasGamma::Decode: remainder=0x%lX, result=%lu (0x%lX)\n", 
-         (unsigned long)remainder, (unsigned long)result, (unsigned long)result);
   return (int32_t)result;
 }

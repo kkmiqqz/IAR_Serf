@@ -4,8 +4,13 @@
 
 SerfQtCompressor::SerfQtCompressor(uint16_t block_size, float max_diff) 
     : kBlockSize(block_size), kMaxDiff(max_diff * 0.999f) {
-  // IAR适配：使用malloc替代std::make_unique
-  output_bit_stream_ = new OutputBitStream(2 * block_size * 8);
+  // IAR适配：优化buffer_size计算
+  // 对于轨迹数据，平均每个点大约需要8-12位（Elias Gamma编码）
+  // 加上header（48位），总共约为 block_size * 12 + 48 位
+  // 转换为字节：(block_size * 12 + 48) / 8 ≈ block_size * 1.5 + 6
+  // 为了节省内存，最大限制为128字节
+  uint32_t buffer_size = (block_size * 2 < 128) ? (block_size * 2) : 128;
+  output_bit_stream_ = new OutputBitStream(buffer_size);
   first_ = true;
   pre_value_ = 2.0f;
   compressed_size_in_bits_ = 0;
@@ -15,7 +20,6 @@ SerfQtCompressor::SerfQtCompressor(uint16_t block_size, float max_diff)
 void SerfQtCompressor::AddValue(float v) {
   if (first_) {
     first_ = false;
-    printf("Write: block_size=%lu, max_diff=%f\n", (unsigned long)kBlockSize, kMaxDiff);
     compressed_size_in_bits_ += output_bit_stream_->WriteInt(kBlockSize, 16);
     uint32_t max_diff_bits = Double::FloatToLongBits(kMaxDiff);
     compressed_size_in_bits_ += output_bit_stream_->WriteLong(max_diff_bits, 32);
@@ -27,9 +31,6 @@ void SerfQtCompressor::AddValue(float v) {
   
   int32_t zigzag_value = ZigZagCodec::Encode(q) + 1;
   int bits_written = EliasGammaCodec::Encode(zigzag_value, output_bit_stream_);
-  printf("AddValue: q=%ld, zigzag_value=%ld, bits_written=%d, total_bits=%lu\n", 
-         (long)q, (long)zigzag_value, bits_written, 
-         (unsigned long)(compressed_size_in_bits_ + bits_written));
   compressed_size_in_bits_ += bits_written;
   pre_value_ = recoverValue;
 }

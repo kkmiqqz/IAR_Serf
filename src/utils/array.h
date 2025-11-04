@@ -7,7 +7,7 @@
 #include <stdio.h>
 // IAR适配：使用C风格数组替代C++ STL
 // 由于CC2530内存限制，使用全局静态缓冲区池，避免栈溢出和malloc/free
-#define MAX_ARRAY_SIZE 64  // 最大数组大小（从128减少到64，避免XDATA空间不足）
+#define MAX_ARRAY_SIZE 128  // 最大数组大小，限制为128以节省XDATA
 
 // 全局静态缓冲区池（避免栈溢出）
 // 为不同类型的数组提供独立的缓冲区池

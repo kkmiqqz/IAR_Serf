@@ -16,8 +16,8 @@
 #endif
 
 // 测试参数
-#define MAX_POINTS 10      // 进一步减少到10，避免XDATA空间不足
-#define BLOCK_SIZE 10      // 从25减少到10
+#define MAX_POINTS 50      // 恢复到50个点
+#define BLOCK_SIZE 50      // 恢复到50
 #define MAX_DIFF_LATITUDE 0.0001f   // 纬度最大误差
 #define MAX_DIFF_LONGITUDE 0.0001f  // 经度最大误差
 
@@ -28,9 +28,13 @@ static uint16_t test_data_count = 0;
 
 // 全局静态缓冲区，用于中转压缩数据（避免栈溢出）
 // 不使用__xdata，避免占用XDATA栈空间
-// 减小到64字节，与MAX_ARRAY_SIZE匹配
-static uint8_t g_lat_compressed_data[64];
-static uint8_t g_lon_compressed_data[64];
+// 限制为128字节以节省XDATA
+static uint8_t g_lat_compressed_data[128];
+static uint8_t g_lon_compressed_data[128];
+
+// 全局静态缓冲区，用于存储解压缩结果（避免栈溢出）
+static float g_lat_decompressed[50];
+static float g_lon_decompressed[50];
 
 // 加载测试数据
 bool load_test_data(const char* filename) {
@@ -48,11 +52,13 @@ bool load_test_data(const char* filename) {
     test_data_count = file_reader_get_total_points(&reader);
     DEBUG_PRINTF("total_data_count: %u\n", test_data_count);
     
-    // 只读取前2个点进行测试
-    while (file_reader_read_next(&reader, &point) && count < 2) {
+    // 读取所有数据点
+    while (file_reader_read_next(&reader, &point) && count < MAX_POINTS) {
         test_data[count] = point;
         count++;
-        printf("Loaded point %u: lat=%.6f, lon=%.6f\n", count, point.latitude, point.longitude);
+        if (count <= 2 || count == MAX_POINTS) {
+            printf("Loaded point %u: lat=%.6f, lon=%.6f\n", count, point.latitude, point.longitude);
+        }
     }
     
     test_data_count = count;
@@ -65,25 +71,33 @@ bool load_test_data(const char* filename) {
 
 // 测试serf-QT压缩算法 - 流式压缩和解压缩
 void test_serf_qt_compression(void) {
-    printf("\n=== SERF-QT compress test ===\n");
+    printf("Entering test_serf_qt_compression, test_data_count=%u\n", test_data_count);
     
     if (test_data_count == 0) {
         printf("error: no data\n");
         return;
     }
     
+    printf("\n=== SERF-QT compress test ===\n");
+    
     // 流式压缩：一个点压缩之后立马就解压缩
     printf("Starting stream compression and decompression test...\n");
     
     // 先压缩并保存纬度数据
-    DEBUG_PRINTF("start compress latdata...\n");
+    printf("Start compressing latitude data (%u points)...\n", test_data_count);
     uint32_t lat_compressed_bits;
     uint16_t lat_compressed_len;
     {
+        printf("Creating lat_compressor...\n");
         SerfQtCompressor lat_compressor(test_data_count, MAX_DIFF_LATITUDE);
+        printf("Adding %u values...\n", test_data_count);
         for (uint16_t i = 0; i < test_data_count; i++) {
             lat_compressor.AddValue(test_data[i].latitude);
+            if (i % 10 == 9) {
+                printf("  processed %u/%u points\n", i+1, test_data_count);
+            }
         }
+        printf("Closing compressor...\n");
         lat_compressor.Close();
         lat_compressed_bits = lat_compressor.get_compressed_size_in_bits();
         
@@ -91,7 +105,7 @@ void test_serf_qt_compression(void) {
         const Array<uint8_t>& temp_lat = lat_compressor.compressed_bytes();
         lat_compressed_len = temp_lat.length();
         printf("lat_compressed: valid=%d, length=%u\n", temp_lat.is_valid(), lat_compressed_len);
-        if (temp_lat.is_valid() && lat_compressed_len <= 64) {
+        if (temp_lat.is_valid() && lat_compressed_len <= 128) {
             for (uint16_t i = 0; i < lat_compressed_len; i++) {
                 g_lat_compressed_data[i] = temp_lat[i];
             }
@@ -101,7 +115,7 @@ void test_serf_qt_compression(void) {
                    g_lat_compressed_data[2], g_lat_compressed_data[3]);
         } else {
             lat_compressed_len = 0;
-            printf("Failed to copy lat compressed data\n");
+            printf("Failed to copy lat compressed data (length=%u exceeds 128)\n", lat_compressed_len);
         }
         // lat_compressor 在此析构，释放缓冲区
     }
@@ -122,7 +136,7 @@ void test_serf_qt_compression(void) {
         const Array<uint8_t>& temp_lon = lon_compressor.compressed_bytes();
         lon_compressed_len = temp_lon.length();
         printf("lon_compressed: valid=%d, length=%u\n", temp_lon.is_valid(), lon_compressed_len);
-        if (temp_lon.is_valid() && lon_compressed_len <= 64) {
+        if (temp_lon.is_valid() && lon_compressed_len <= 128) {
             for (uint16_t i = 0; i < lon_compressed_len; i++) {
                 g_lon_compressed_data[i] = temp_lon[i];
             }
@@ -132,7 +146,7 @@ void test_serf_qt_compression(void) {
                    g_lon_compressed_data[2], g_lon_compressed_data[3]);
         } else {
             lon_compressed_len = 0;
-            printf("Failed to copy lon compressed data\n");
+            printf("Failed to copy lon compressed data (length=%u exceeds 128)\n", lon_compressed_len);
         }
         // lon_compressor 在此析构，释放缓冲区
     }
@@ -162,7 +176,6 @@ void test_serf_qt_compression(void) {
     
     // 解压缩纬度数据，然后立即验证并释放
     uint16_t lat_decomp_count = 0;
-    float lat_values[10];  // 使用固定数组避免Array缓冲池冲突
     {
         Array<float> lat_decompressed(test_data_count);
         if (lat_decompressed.is_valid()) {
@@ -174,9 +187,9 @@ void test_serf_qt_compression(void) {
                 }
                 if (lat_decompressor.DecompressTo(temp_lat_array, lat_decompressed, lat_compressed_bits)) {
                     lat_decomp_count = lat_decompressed.length();
-                    // 复制到固定数组
-                    for (uint16_t i = 0; i < lat_decomp_count && i < 10; i++) {
-                        lat_values[i] = lat_decompressed[i];
+                    // 复制到全局数组
+                    for (uint16_t i = 0; i < lat_decomp_count && i < 50; i++) {
+                        g_lat_decompressed[i] = lat_decompressed[i];
                     }
                     printf("Lat decompressed successfully: %u values\n", lat_decomp_count);
                 }
@@ -188,7 +201,6 @@ void test_serf_qt_compression(void) {
     
     // 解压缩经度数据
     uint16_t lon_decomp_count = 0;
-    float lon_values[10];  // 使用固定数组避免Array缓冲池冲突
     {
         Array<float> lon_decompressed(test_data_count);
         if (lon_decompressed.is_valid()) {
@@ -200,9 +212,9 @@ void test_serf_qt_compression(void) {
                 }
                 if (lon_decompressor.DecompressTo(temp_lon_array, lon_decompressed, lon_compressed_bits)) {
                     lon_decomp_count = lon_decompressed.length();
-                    // 复制到固定数组
-                    for (uint16_t i = 0; i < lon_decomp_count && i < 10; i++) {
-                        lon_values[i] = lon_decompressed[i];
+                    // 复制到全局数组
+                    for (uint16_t i = 0; i < lon_decomp_count && i < 50; i++) {
+                        g_lon_decompressed[i] = lon_decompressed[i];
                     }
                     printf("Lon decompressed successfully: %u values\n", lon_decomp_count);
                 }
@@ -227,14 +239,14 @@ void test_serf_qt_compression(void) {
     float max_lat_error = 0.0f;
     float max_lon_error = 0.0f;
     
-    // 使用固定数组进行验证
+    // 使用全局数组进行验证
     for (uint16_t i = 0; i < test_data_count && i < lat_decomp_count && i < lon_decomp_count; i++) {
-        float lat_error = fabsf(test_data[i].latitude - lat_values[i]);
-        float lon_error = fabsf(test_data[i].longitude - lon_values[i]);
+        float lat_error = fabsf(test_data[i].latitude - g_lat_decompressed[i]);
+        float lon_error = fabsf(test_data[i].longitude - g_lon_decompressed[i]);
         
         printf("Point %u: original(%.6f, %.6f), decompressed(%.6f, %.6f), error(%.6f, %.6f)\n",
                i, test_data[i].latitude, test_data[i].longitude,
-               lat_values[i], lon_values[i], lat_error, lon_error);
+               g_lat_decompressed[i], g_lon_decompressed[i], lat_error, lon_error);
         
         if (lat_error > MAX_DIFF_LATITUDE || lon_error > MAX_DIFF_LONGITUDE) {
             error_count++;
