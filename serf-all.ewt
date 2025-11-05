@@ -2102,6 +2102,12 @@
         <group>
             <name>compressor</name>
             <file>
+                <name>$PROJ_DIR$\src\compressor\net_serf_qt_compressor.cc</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\compressor\net_serf_qt_compressor.h</name>
+            </file>
+            <file>
                 <name>$PROJ_DIR$\src\compressor\serf_qt_compressor.cc</name>
             </file>
             <file>
@@ -2110,6 +2116,12 @@
         </group>
         <group>
             <name>decompressor</name>
+            <file>
+                <name>$PROJ_DIR$\src\decompressor\net_serf_qt_decompressor.cc</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\src\decompressor\net_serf_qt_decompressor.h</name>
+            </file>
             <file>
                 <name>$PROJ_DIR$\src\decompressor\serf_qt_decompressor.cc</name>
             </file>

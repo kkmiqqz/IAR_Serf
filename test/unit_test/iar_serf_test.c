@@ -6,6 +6,8 @@
 // IAR适配：使用C风格头文件替代C++ STL
 #include "../../src/compressor/serf_qt_compressor.h"
 #include "../../src/decompressor/serf_qt_decompressor.h"
+#include "../../src/compressor/net_serf_qt_compressor.h"
+#include "../../src/decompressor/net_serf_qt_decompressor.h"
 #include "../../src/utils/file_reader.h"
 
 // 调试输出宏
@@ -52,7 +54,7 @@ bool load_test_data(const char* filename) {
     test_data_count = file_reader_get_total_points(&reader);
     DEBUG_PRINTF("total_data_count: %u\n", test_data_count);
     
-    // 读取所有数据点
+    // 读取所有数据点进行流式测试
     while (file_reader_read_next(&reader, &point) && count < MAX_POINTS) {
         test_data[count] = point;
         count++;
@@ -268,6 +270,109 @@ void test_serf_qt_compression(void) {
     }
 }
 
+// 测试Net-SERF-QT流式压缩算法
+void test_net_serf_qt_streaming(void) {
+    printf("\n=== Net-SERF-QT streaming test ===\n");
+    
+    if (test_data_count == 0) {
+        printf("error: no data\n");
+        return;
+    }
+    
+    // 创建持久的压缩器和解压缩器（保持pre_value连续性）
+    NetSerfQtCompressor lat_compressor(MAX_DIFF_LATITUDE);
+    NetSerfQtCompressor lon_compressor(MAX_DIFF_LONGITUDE);
+    NetSerfQtDecompressor lat_decompressor(MAX_DIFF_LATITUDE);
+    NetSerfQtDecompressor lon_decompressor(MAX_DIFF_LONGITUDE);
+    
+    // 统计变量
+    uint32_t total_compressed_bytes = 0;
+    uint16_t error_count = 0;
+    float max_lat_error = 0.0f;
+    float max_lon_error = 0.0f;
+    
+    // 流式处理：逐点压缩和解压缩
+    printf("Processing %u points in streaming mode...\n", test_data_count);
+    
+    for (uint16_t i = 0; i < test_data_count; i++) {
+        double lat_decompressed, lon_decompressed;
+        uint16_t lat_len, lon_len;
+        
+        // 压缩和解压缩纬度（使用作用域确保临时Array及时释放）
+        {
+            Array<uint8_t> lat_compressed = lat_compressor.Compress((double)test_data[i].latitude);
+            lat_len = lat_compressed.length();
+            total_compressed_bytes += lat_len;
+            lat_decompressed = lat_decompressor.Decompress(lat_compressed);
+            // lat_compressed在此自动析构，释放内存
+        }
+        
+        // 压缩和解压缩经度（使用作用域确保临时Array及时释放）
+        {
+            Array<uint8_t> lon_compressed = lon_compressor.Compress((double)test_data[i].longitude);
+            lon_len = lon_compressed.length();
+            total_compressed_bytes += lon_len;
+            lon_decompressed = lon_decompressor.Decompress(lon_compressed);
+            // lon_compressed在此自动析构，释放内存
+        }
+        
+        // 计算误差
+        float lat_error = fabsf(test_data[i].latitude - (float)lat_decompressed);
+        float lon_error = fabsf(test_data[i].longitude - (float)lon_decompressed);
+        
+        if (lat_error > MAX_DIFF_LATITUDE || lon_error > MAX_DIFF_LONGITUDE) {
+            error_count++;
+        }
+        
+        if (lat_error > max_lat_error) max_lat_error = lat_error;
+        if (lon_error > max_lon_error) max_lon_error = lon_error;
+        
+        // 显示前几个点和最后一个点的结果
+        if (i < 3 || i == test_data_count - 1) {
+            printf("Point %u: original(%.6f, %.6f), decompressed(%.9f, %.9f), compressed_bytes=%u+%u\n",
+                   i, test_data[i].latitude, test_data[i].longitude,
+                   lat_decompressed, lon_decompressed, lat_len, lon_len);
+            printf("         error=(%.9f, %.9f)\n", 
+                   fabs(test_data[i].latitude - lat_decompressed),
+                   fabs(test_data[i].longitude - lon_decompressed));
+        }
+        
+        // 每10个点报告一次进度
+        if ((i + 1) % 10 == 0) {
+            uint32_t current_original_size_double = (i + 1) * 8 * 2;  // 按double(8字节)计算
+            printf("Processed %u/%u points, current compression ratio vs double: %.2f%% (%lu/%lu bytes)\n",
+                   i + 1, test_data_count,
+                   (float)total_compressed_bytes / (float)current_original_size_double * 100.0f,
+                   (unsigned long)total_compressed_bytes,
+                   (unsigned long)current_original_size_double);
+        }
+    }
+    
+    // 计算压缩率（按double计算原始大小）
+    // 硬编码：double=8字节，float=4字节（在某些平台上sizeof可能不准确）
+    uint32_t original_size_double = test_data_count * 8 * 2;  // 8字节/double
+    uint32_t original_size_float = test_data_count * 4 * 2;    // 4字节/float
+    float compression_ratio_vs_double = (float)total_compressed_bytes / (float)original_size_double * 100.0f;
+    float compression_ratio_vs_float = (float)total_compressed_bytes / (float)original_size_float * 100.0f;
+    
+    printf("\n=== Streaming test results ===\n");
+    printf("Points processed: %u\n", test_data_count);
+    printf("Original size (double, 8 bytes): %lu bytes\n", (unsigned long)original_size_double);
+    printf("Original size (float, 4 bytes): %lu bytes\n", (unsigned long)original_size_float);
+    printf("Compressed size: %lu bytes\n", (unsigned long)total_compressed_bytes);
+    printf("Compression ratio vs double: %.2f%%\n", compression_ratio_vs_double);
+    printf("Compression ratio vs float: %.2f%%\n", compression_ratio_vs_float);
+    printf("Error count: %u / %u\n", error_count, test_data_count);
+    printf("Max lat error: %.6f (limit: %.6f)\n", max_lat_error, MAX_DIFF_LATITUDE);
+    printf("Max lon error: %.6f (limit: %.6f)\n", max_lon_error, MAX_DIFF_LONGITUDE);
+    
+    if (error_count == 0) {
+        printf("=== Streaming test SUCCESS! ===\n");
+    } else {
+        printf("??? Streaming test FAILED!\n");
+    }
+}
+
 // 主测试函数
 int main(void) {
     printf("=== IAR EW8051 Trajectory Compression Test ===\n");
@@ -278,8 +383,8 @@ int main(void) {
         return -1;
     }
     
-    // 运行serf-QT测试
-    test_serf_qt_compression();
+    // 运行流式测试（更适合嵌入式平台）
+    test_net_serf_qt_streaming();
     
     printf("\n=== test finish ===\n");
     return 0;
